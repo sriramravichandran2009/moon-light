@@ -1,0 +1,46 @@
+14. Ergonomic Neck Tilt & Spinal Strain Detector
+Classes to Train: Head Upright, Neck Tilted Left, Neck Tilted Right
+Interaction: Detects uneven neck tilting during prolonged computer use and triggers posture correction reminders.
+JavaScript
+// =========================================================================
+// 🔴 ALTER YOUR TEACHABLE MACHINE POSE MODEL URL HERE (Keep trailing slash '/')
+// =========================================================================
+let poseModelURL = 'https://teachablemachine.withgoogle.com/models/PASTE_YOUR_MODEL_ID_HERE/';
+
+let classifier, video, label = "Scanning Spine...", confidence = 0.0;
+
+function setup() {
+  createCanvas(640, 520);
+  video = createCapture(VIDEO);
+  video.size(640, 480);
+  video.hide();
+  classifier = ml5.imageClassifier(poseModelURL + 'model.json', video, () => classifyVideo());
+}
+
+function classifyVideo() { classifier.classify(gotResult); }
+
+function gotResult(err, res) {
+  if (!err && res.length > 0) {
+    label = res[0].label;
+    confidence = res[0].confidence;
+  }
+  classifyVideo();
+}
+
+function draw() {
+  background(20);
+  push(); translate(width, 0); scale(-1, 1);
+  image(video, 0, 0, width, 440);
+  pop();
+
+  fill(30); noStroke(); rect(0, 440, width, 80);
+  fill(255); textSize(20); textAlign(LEFT, CENTER);
+  text("Neck Alignment: " + label, 20, 480);
+
+  if (confidence > 0.85 && (label.toLowerCase().includes("tilt") || label.toLowerCase().includes("left") || label.toLowerCase().includes("right"))) {
+    fill(255, 140, 0, 160); rect(0, 0, width, 440);
+    fill(255); textAlign(CENTER, CENTER); textSize(30);
+    text("⚠️ NECK STRAIN DETECTED", width / 2, 200);
+    textSize(20); text("Re-center your head and relax shoulders", width / 2, 240);
+  }
+}
