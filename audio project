@@ -1,0 +1,46 @@
+6. Clap-Activated Smart Room Lamp
+Classes to Train: Clap, Finger Snap, Background Noise
+Interaction: Toggles a virtual room lamp between bright daylight and dark night mode upon detecting a clap.
+JavaScript
+// =========================================================================
+// 🔴 ALTER YOUR TEACHABLE MACHINE AUDIO MODEL URL HERE (Keep trailing slash '/')
+// =========================================================================
+let audioModelURL = 'https://teachablemachine.withgoogle.com/models/PASTE_YOUR_MODEL_ID_HERE/';
+
+let classifier, label = "Listening...", confidence = 0.0;
+let lightOn = false;
+
+function preload() {
+  classifier = ml5.soundClassifier(audioModelURL + 'model.json', { probabilityThreshold: 0.80 });
+}
+
+function setup() {
+  createCanvas(640, 480);
+  classifier.classify(gotResult);
+}
+
+function gotResult(err, res) {
+  if (!err && res.length > 0) {
+    label = res[0].label;
+    confidence = res[0].confidence;
+    if (label.toLowerCase().includes("clap")) {
+      lightOn = !lightOn;
+    }
+  }
+}
+
+function draw() {
+  if (lightOn) {
+    background(255, 240, 160);
+    fill(40); textAlign(CENTER, CENTER); textSize(36);
+    text("💡 SMART LAMP: ON", width / 2, height / 2 - 20);
+  } else {
+    background(25);
+    fill(200); textAlign(CENTER, CENTER); textSize(36);
+    text("🌑 SMART LAMP: OFF", width / 2, height / 2 - 20);
+  }
+
+  fill(80, 80, 80, 180); noStroke(); rect(40, height - 90, width - 80, 60, 8);
+  fill(255); textSize(20);
+  text("Heard: " + label + " (" + floor(confidence * 100) + "%)", width / 2, height - 60);
+}
